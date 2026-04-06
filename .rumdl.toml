@@ -1,0 +1,12 @@
+[global]
+# MD041 triggers on files with YAML frontmatter (e.g. Claude skills)
+extend-disable = ["MD041"]
+
+exclude = [
+    ".git",
+    "node_modules",
+    "vendor",
+    "dist",
+    "build",
+    "CHANGELOG.md",
+]

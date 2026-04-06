@@ -15,8 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install rumdl
+        run: cargo install rumdl
+      - name: Lint Markdown
+        run: rumdl check .
       - name: "TODO: Add your lint steps"
-        run: echo "Add linting commands here"
+        run: echo "Add additional linting commands here"
 
   test:
     name: Test

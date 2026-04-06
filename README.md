@@ -9,6 +9,7 @@ standardized tooling and GitHub configuration.
    template" on GitHub, or `gh repo create --template`).
 
 2. **Run the setup script** to configure GitHub settings:
+
    ```bash
    ./scripts/setup-repo.sh
    ```
@@ -25,6 +26,7 @@ standardized tooling and GitHub configuration.
 ## What's Included
 
 ### CI/CD
+
 - **GitHub Actions** (`ci.yml`): Minimal CI with placeholder
   lint/test jobs, conventional commit check, and an
   `All Checks` gate job.
@@ -32,17 +34,22 @@ standardized tooling and GitHub configuration.
   with automerge and conventional commit messages.
 
 ### Git Hooks
+
 - **Conventional commits**: Enforced at commit-msg stage.
 - **Secret detection**: Gitleaks runs on every commit.
+- **Markdown linting**: rumdl checks all `.md` files.
 
 ### Claude Code
+
 - **`/refactor`**: 3-pass refactoring (structure, coherence,
   tests).
 - **`/ship`**: Commit, sync, push, create PR with auto-merge.
 - **`/sync`**: Fetch and rebase onto default branch.
-- **`/publish`**: Sync, refactor, sync again, then ship as PR.
+- **`/publish`**: Sync, refactor, ship as PR, then monitor CI
+  and auto-fix failures until merged.
 
 ### Repository Configuration
+
 - **`scripts/setup-repo.sh`**: Configures GitHub repo via
   `gh` CLI:
   - Rebase-only merges
