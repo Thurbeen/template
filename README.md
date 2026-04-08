@@ -16,6 +16,7 @@ standardized tooling and GitHub configuration.
 3. **Customize for your project:**
    - Edit `CLAUDE.md` with your project's build/test/lint
      commands.
+   - Edit `cog.toml`: set `repository`, `owner`, and `authors`.
    - Add language-specific entries to `.gitignore`.
    - Add language-specific hooks to `.pre-commit-config.yaml`.
    - Replace placeholder jobs in `.github/workflows/ci.yml`.
@@ -28,6 +29,12 @@ standardized tooling and GitHub configuration.
 - **GitHub Actions** (`ci.yml`): Minimal CI with placeholder
   lint/test jobs, conventional commit check, and an
   `All Checks` gate job.
+- **GitHub Actions** (`release.yml`): Automated semver release
+  powered by [cocogitto](https://docs.cocogitto.io/). On push
+  to `main`, analyzes conventional commits, creates a version
+  tag, generates a changelog, and publishes a GitHub Release.
+- **Cocogitto** (`cog.toml`): Semantic versioning config with
+  commit type mapping (feat → minor, fix/perf → patch).
 - **Renovate** (`renovate.json`): Automated dependency updates
   with automerge and conventional commit messages.
 
