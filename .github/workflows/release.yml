@@ -1,0 +1,110 @@
+---
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+# Prevent concurrent releases
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Analyze commits and determine if release is needed
+  check-release:
+    name: Analyze commits for release
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.parse.outputs.should_release }}
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install cocogitto
+        uses: cocogitto/cocogitto-action@v4
+        with:
+          install-only: true
+
+      - name: Parse release decision
+        id: parse
+        run: |
+          VERSION="$(cog bump --auto --dry-run)"
+          echo "Detected version: $VERSION"
+          if [ -n "$VERSION" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "version=" >> $GITHUB_OUTPUT
+          fi
+
+  # Create git tag (only if release needed)
+  create-tag:
+    name: Create release tag
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create version tag
+        uses: cocogitto/cocogitto-action@v4
+        with:
+          command: bump
+          args: --auto
+          git-user: 'github-actions[bot]'
+          git-user-email: 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Push tag to repository
+        run: git push --tags
+
+  # Generate CHANGELOG from commits
+  generate-changelog:
+    name: Generate changelog
+    needs: [check-release, create-tag]
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.stdout }}
+    steps:
+      - name: Checkout code at tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.check-release.outputs.version }}
+          fetch-depth: 0
+
+      - name: Generate changelog for release
+        uses: cocogitto/cocogitto-action@v4
+        id: changelog
+        with:
+          command: changelog
+          args: --at ${{ needs.check-release.outputs.version }}
+
+  # Publish GitHub Release
+  publish:
+    name: Publish GitHub Release
+    needs: [check-release, create-tag, generate-changelog]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.check-release.outputs.version }}
+          name: ${{ needs.check-release.outputs.version }}
+          body: |
+            ${{ needs.generate-changelog.outputs.changelog || '## Changes
+
+            See commit history for details.' }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
