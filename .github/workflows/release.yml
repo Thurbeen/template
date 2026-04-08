@@ -28,19 +28,19 @@ jobs:
       - name: Install cocogitto
         uses: cocogitto/cocogitto-action@v4
         with:
-          install-only: true
+          command: check
 
       - name: Parse release decision
         id: parse
         run: |
-          VERSION="$(cog bump --auto --dry-run)"
-          echo "Detected version: $VERSION"
-          if [ -n "$VERSION" ]; then
+          if VERSION="$(cog bump --auto --dry-run 2>&1)"; then
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Release needed: $VERSION"
           else
             echo "should_release=false" >> $GITHUB_OUTPUT
             echo "version=" >> $GITHUB_OUTPUT
+            echo "No releasable commits: $VERSION"
           fi
 
   # Create git tag (only if release needed)
