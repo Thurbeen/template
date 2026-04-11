@@ -14,7 +14,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: "TODO: Add your lint steps"
         run: echo "Add linting commands here"
 
@@ -22,7 +22,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: "TODO: Add your test steps"
         run: echo "Add test commands here"
 
@@ -31,10 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-      - uses: cocogitto/cocogitto-action@v4
+      - uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
         with:
           command: check
 

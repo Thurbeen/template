@@ -21,12 +21,12 @@ jobs:
       version: ${{ steps.parse.outputs.version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Install cocogitto
-        uses: cocogitto/cocogitto-action@v4
+        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
         with:
           command: check
 
@@ -51,12 +51,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
 
       - name: Create version tag
-        uses: cocogitto/cocogitto-action@v4
+        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
         with:
           command: bump
           args: --auto
@@ -75,13 +75,13 @@ jobs:
       changelog: ${{ steps.changelog.outputs.stdout }}
     steps:
       - name: Checkout code at tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ needs.check-release.outputs.version }}
           fetch-depth: 0
 
       - name: Generate changelog for release
-        uses: cocogitto/cocogitto-action@v4
+        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
         id: changelog
         with:
           command: changelog
@@ -96,7 +96,7 @@ jobs:
       contents: write
     steps:
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2
         with:
           tag_name: ${{ needs.check-release.outputs.version }}
           name: ${{ needs.check-release.outputs.version }}
