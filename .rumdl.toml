@@ -1,0 +1,9 @@
+[global]
+# Agent-tooling directories follow each CLI's own skill conventions
+# (frontmatter first, no leading h1), which the document rules reject.
+exclude = [".git", ".agents", ".claude"]
+
+[MD013]
+line_length = 100
+tables = false
+code_blocks = false

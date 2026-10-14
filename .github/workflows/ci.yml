@@ -9,6 +9,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+# Commit messages on the branch are not checked here: squash merge discards
+# them, and the PR title that becomes the commit is checked by pr-title.yml.
+# A branch ruleset requires "All Checks" and "PR Title"; add every new job to
+# `all-checks.needs`, or it can fail while the gate reports green.
 jobs:
   lint:
     name: Lint
@@ -26,17 +33,22 @@ jobs:
       - name: "TODO: Add your test steps"
         run: echo "Add test commands here"
 
-  conventional-commits:
-    name: Conventional Commits
+  markdown-lint:
+    name: Markdown Lint
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: rvben/rumdl@a7a8434abe60f64239ea05624885f9bad66a1026 # v0.2.79
         with:
-          fetch-depth: 0
-      - uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
-        with:
-          command: check
+          report-type: annotations
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Run shellcheck
+        run: git ls-files -z '*.sh' | xargs -0 --no-run-if-empty shellcheck
 
   all-checks:
     name: All Checks
@@ -44,7 +56,8 @@ jobs:
     needs:
       - lint
       - test
-      - conventional-commits
+      - markdown-lint
+      - shellcheck
     runs-on: ubuntu-latest
     steps:
       - name: Verify all checks passed

@@ -16,8 +16,12 @@ disable_bump_commit = true
 # at release time and included in the GitHub Release body
 disable_changelog = true
 
-# Git hooks are managed by pre-commit (see .pre-commit-config.yaml)
-# Install with: pre-commit install
+# Optional allowlist of commit scopes, enforced on PR titles by
+# scripts/ci/check-pr-title.sh
+# scopes = ["deps", "docs"]
+
+# Git hooks are managed by prek (see .pre-commit-config.yaml)
+# Install with: prek install
 
 # Custom commit types
 [commit_types]

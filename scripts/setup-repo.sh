@@ -7,8 +7,9 @@ set -euo pipefail
 # Usage: ./scripts/setup-repo.sh
 #
 # Configures:
-# - Rebase-only merges (disable merge commit and squash)
-# - Auto-merge enabled
+# - Squash-only merges: the PR title becomes the one commit on the
+#   default branch, the PR body its message
+# - Auto-merge enabled, "Update branch" button enabled
 # - Delete branch on merge
 # - Branch ruleset protecting the default branch
 
@@ -19,13 +20,16 @@ echo "Configuring repository: ${REPO}"
 echo "Default branch: ${DEFAULT_BRANCH}"
 
 # ── Merge settings ──────────────────────────────────────
-echo "Setting merge strategy to rebase-only..."
+echo "Setting merge strategy to squash-only..."
 gh api -X PATCH "repos/${REPO}" \
-  -f allow_merge_commit=false \
-  -f allow_squash_merge=false \
-  -f allow_rebase_merge=true \
-  -f allow_auto_merge=true \
-  -f delete_branch_on_merge=true
+  -F allow_merge_commit=false \
+  -F allow_squash_merge=true \
+  -F allow_rebase_merge=false \
+  -f squash_merge_commit_title=PR_TITLE \
+  -f squash_merge_commit_message=PR_BODY \
+  -F allow_auto_merge=true \
+  -F allow_update_branch=true \
+  -F delete_branch_on_merge=true
 
 # ── Branch ruleset ──────────────────────────────────────
 echo "Creating branch ruleset: protect-default-branch..."
@@ -70,6 +74,9 @@ gh api -X "${METHOD}" "${ENDPOINT}" \
       "type": "non_fast_forward"
     },
     {
+      "type": "required_linear_history"
+    },
+    {
       "type": "pull_request",
       "parameters": {
         "required_approving_review_count": 0,
@@ -77,7 +84,7 @@ gh api -X "${METHOD}" "${ENDPOINT}" \
         "require_code_owner_review": false,
         "require_last_push_approval": false,
         "required_review_thread_resolution": true,
-        "allowed_merge_methods": ["rebase"]
+        "allowed_merge_methods": ["squash"]
       }
     },
     {
@@ -87,6 +94,10 @@ gh api -X "${METHOD}" "${ENDPOINT}" \
         "required_status_checks": [
           {
             "context": "All Checks",
+            "integration_id": 15368
+          },
+          {
+            "context": "PR Title",
             "integration_id": 15368
           }
         ]
@@ -98,12 +109,13 @@ RULESET_EOF
 
 echo ""
 echo "Done. Repository configured:"
-echo "  - Merge: rebase only"
+echo "  - Merge: squash only (commit = PR title, message = PR body)"
 echo "  - Auto-merge: enabled"
+echo "  - Update branch: enabled"
 echo "  - Delete branch on merge: enabled"
 echo "  - Ruleset: protect-default-branch (active)"
 echo "    - No deletion of ${DEFAULT_BRANCH}"
-echo "    - No non-fast-forward on ${DEFAULT_BRANCH}"
-echo "    - PR required (0 approvers, thread resolution, rebase only)"
-echo "    - Required status check: All Checks"
+echo "    - No non-fast-forward on ${DEFAULT_BRANCH}, linear history"
+echo "    - PR required (0 approvers, thread resolution, squash only)"
+echo "    - Required status checks: All Checks, PR Title"
 echo "    - Bypass: repository admin role"

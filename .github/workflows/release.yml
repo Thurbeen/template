@@ -26,21 +26,26 @@ jobs:
           fetch-depth: 0
 
       - name: Install cocogitto
-        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
+        uses: cocogitto/cocogitto-action@52d0023b4396897f1815648e553db2ab8d782f3a # v4.2.0
         with:
-          command: check
+          install-only: true
 
       - name: Parse release decision
         id: parse
         run: |
-          if VERSION="$(cog bump --auto --dry-run 2>&1)"; then
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # cog prints the next tag when a bump is due and a multi-line
+          # message when none is; keep only a real semver so that message
+          # never reaches $GITHUB_OUTPUT.
+          RAW="$(cog bump --auto --dry-run 2>/dev/null || true)"
+          VERSION="$(printf '%s\n' "$RAW" | grep -oE '^v?[0-9]+\.[0-9]+\.[0-9]+[A-Za-z0-9.+-]*' | head -1 || true)"
+          if [ -n "$VERSION" ]; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "Release needed: $VERSION"
           else
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "version=" >> $GITHUB_OUTPUT
-            echo "No releasable commits: $VERSION"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+            echo "No releasable commits"
           fi
 
   # Create git tag (only if release needed)
@@ -56,7 +61,7 @@ jobs:
           fetch-depth: 0
 
       - name: Create version tag
-        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
+        uses: cocogitto/cocogitto-action@52d0023b4396897f1815648e553db2ab8d782f3a # v4.2.0
         with:
           command: bump
           args: --auto
@@ -81,7 +86,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate changelog for release
-        uses: cocogitto/cocogitto-action@390bda87a19bf627e03ad075c67a11e9ddbb7547 # v4
+        uses: cocogitto/cocogitto-action@52d0023b4396897f1815648e553db2ab8d782f3a # v4.2.0
         id: changelog
         with:
           command: changelog
