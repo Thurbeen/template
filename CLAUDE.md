@@ -38,7 +38,12 @@ this repository.
 
 All commits must follow
 [Conventional Commits](https://www.conventionalcommits.org/).
-Enforced by pre-commit hooks.
+Enforced by prek hooks.
+
+Pull requests are squash merged: the PR title becomes the
+commit on `main`, so write it as a conventional commit. Rebase
+onto `main` locally; never merge it into the branch. See
+`CONTRIBUTING.md`.
 
 - **Types**: feat, fix, perf, refactor, docs, style, test,
   chore, ci, build, revert

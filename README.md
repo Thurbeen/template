@@ -9,14 +9,23 @@ standardized tooling and GitHub configuration.
    template" on GitHub, or `gh repo create --template`).
 
 2. **Run the setup script** to configure GitHub settings:
+
    ```bash
    ./scripts/setup-repo.sh
    ```
 
-3. **Customize for your project:**
+3. **Install the git hooks** with [prek](https://github.com/j178/prek):
+
+   ```bash
+   prek install
+   ```
+
+4. **Customize for your project:**
    - Edit `CLAUDE.md` with your project's build/test/lint
      commands.
-   - Edit `cog.toml`: set `repository`, `owner`, and `authors`.
+   - Edit `.publish.yaml`: add your test command to the gate.
+   - Edit `cog.toml`: set `repository`, `owner`, and `authors`,
+     and optionally a `scopes` allowlist.
    - Add language-specific entries to `.gitignore`.
    - Add language-specific hooks to `.pre-commit-config.yaml`.
    - Replace placeholder jobs in `.github/workflows/ci.yml`.
@@ -25,10 +34,20 @@ standardized tooling and GitHub configuration.
 
 ## What's Included
 
+### Merge Strategy
+
+Pull requests are **squash merged**; merge commits and rebase
+merges are disabled. Branches are rebased onto `main` locally,
+and the PR title becomes the one conventional commit on `main`.
+See `CONTRIBUTING.md`.
+
 ### CI/CD
-- **GitHub Actions** (`ci.yml`): Minimal CI with placeholder
-  lint/test jobs, conventional commit check, and an
-  `All Checks` gate job.
+
+- **GitHub Actions** (`ci.yml`): placeholder lint/test jobs,
+  markdown lint ([rumdl](https://github.com/rvben/rumdl)),
+  ShellCheck, and an `All Checks` gate job.
+- **GitHub Actions** (`pr-title.yml`): checks the PR title is a
+  conventional commit, since it becomes the squash commit.
 - **GitHub Actions** (`release.yml`): Automated semver release
   powered by [cocogitto](https://docs.cocogitto.io/). On push
   to `main`, analyzes conventional commits, creates a version
@@ -36,29 +55,38 @@ standardized tooling and GitHub configuration.
 - **Cocogitto** (`cog.toml`): Semantic versioning config with
   commit type mapping (feat → minor, fix/perf → patch).
 - **Renovate** (`renovate.json`): Automated dependency updates
-  with automerge and conventional commit messages.
+  with automerge, a 7-day minimum release age, digest-pinned
+  actions and conventional commit titles.
 
 ### Git Hooks
+
+Run by [prek](https://github.com/j178/prek):
+
 - **Conventional commits**: Enforced at commit-msg stage.
 - **Secret detection**: Gitleaks runs on every commit.
+- **Markdown lint**: rumdl, configured in `.rumdl.toml`.
+- **ShellCheck**: on every shell script.
 
-### Claude Code
-- **`/refactor`**: 3-pass refactoring (structure, coherence,
-  tests).
-- **`/ship`**: Commit, sync, push, create PR with auto-merge.
-- **`/sync`**: Fetch and rebase onto default branch.
-- **`/publish`**: Sync, refactor, sync again, then ship as PR.
+### Publishing
+
+- **`.publish.yaml`**: declares the gate the
+  [`publish`](https://github.com/Thurbeen/publish) agent skill
+  runs before it pushes and opens a pull request. Install the
+  skill globally rather than vendoring it into the project.
 
 ### Repository Configuration
+
 - **`scripts/setup-repo.sh`**: Configures GitHub repo via
   `gh` CLI:
-  - Rebase-only merges
-  - Auto-merge enabled
+  - Squash-only merges, commit title from the PR title and
+    message from the PR body
+  - Auto-merge and "Update branch" enabled
   - Delete branch on merge
-  - Branch ruleset with required status checks
+  - Branch ruleset: linear history, PR with resolved threads,
+    required `All Checks` and `PR Title` checks
 
 ## Prerequisites
 
 - [gh CLI](https://cli.github.com/) (authenticated)
-- [pre-commit](https://pre-commit.com/) (`pre-commit install`)
+- [prek](https://github.com/j178/prek) (`prek install`)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)

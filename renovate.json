@@ -3,6 +3,10 @@
   "extends": ["config:recommended"],
   "labels": ["dependencies"],
   "automerge": true,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "semanticCommits": "enabled",
   "semanticCommitType": "fix",
   "semanticCommitScope": "deps",
   "packageRules": [

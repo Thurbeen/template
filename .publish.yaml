@@ -1,0 +1,22 @@
+# The gate the `publish` skill (https://github.com/Thurbeen/publish) runs
+# before it pushes and opens a pull request. Name every command explicitly so
+# what runs is the same every time.
+version: 1
+
+forge: github
+base: main
+
+review:
+  rules:
+    - CONTRIBUTING.md
+    - CLAUDE.md
+
+gate:
+  - name: lint
+    run: prek run --all-files
+  # TODO: replace with your test command.
+  # - name: test
+  #   run: make test
+
+ci:
+  required: true
